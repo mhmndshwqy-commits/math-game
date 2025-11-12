@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧮 لعبة الجمع والطرح للأطفال</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎲 لعبة الجمع والطرح</h1>
+    <p id="instruction">اختر الإجابة الصحيحة قبل انتهاء الوقت:</p>
+
+    <div id="timer">⏰ الوقت المتبقي: <span id="timeLeft">10</span> ثانية</div>
+
+    <div id="questionBox">
+      <span id="num1">0</span>
+      <span id="operator">+</span>
+      <span id="num2">0</span>
+      <span>=</span>
+      <span>؟</span>
+    </div>
+
+    <div id="options"></div>
+
+    <div class="info">
+      <p id="feedback"></p>
+      <p id="score">النقاط: 0</p>
+      <button id="nextBtn">➡️ السؤال التالي</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
