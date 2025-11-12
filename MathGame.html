@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧮 لعبة الجمع والطرح للأطفال</title>
+<style>
+body {
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(to bottom right, #89f7fe, #66a6ff);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #333;
+}
+.container {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  text-align: center;
+  padding: 30px;
+  width: 340px;
+}
+h1 { color: #0078d7; margin-bottom: 20px; }
+#levelSelect { display: flex; flex-direction: column; gap: 10px; }
+.level-btn {
+  padding: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+.level-btn[data-level="easy"] { background-color: #2ecc71; }
+.level-btn[data-level="medium"] { background-color: #f1c40f; color: black; }
+.level-btn[data-level="hard"] { background-color: #e74c3c; }
+#timer { font-size: 18px; margin-bottom: 10px; color: #e67e22; font-weight: bold; }
+#questionBox { font-size: 28px; margin: 20px 0; font-weight: bold; }
+#options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.option-btn {
+  background-color: #f1c40f;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.option-btn:hover { background-color: #f39c12; }
+.info { margin-top: 15px; }
+#feedback { font-size: 18px; font-weight: bold; }
+#nextBtn, #restartBtn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+#nextBtn:hover, #restartBtn:hover { background-color: #2980b9; }
+#restartBtn { background-color: #9b59b6; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎲 لعبة الجمع والطرح</h1>
+
+<div id="levelSelect">
+  <p>اختر المستوى:</p>
+  <button class="level-btn" data-level="easy">🟢 سهل</button>
+  <button class="level-btn" data-level="medium">🟡 متوسط</button>
+  <button class="level-btn" data-level="hard">🔴 صعب</button>
+</div>
+
+<div id="gameArea" style="display:none;">
+  <p id="instruction">اختر الإجابة الصحيحة قبل انتهاء الوقت:</p>
+  <div id="timer">⏰ الوقت المتبقي: <span id="timeLeft">10</span> ثانية</div>
+
+  <div id="questionBox">
+    <span id="num1">0</span>
+    <span id="operator">+</span>
+    <span id="num2">0</span>
+    <span>=</span>
+    <span>؟</span>
+  </div>
+
+  <div id="options"></div>
+
+  <div class="info">
+    <p id="feedback"></p>
+    <p id="score">النقاط: 0</p>
+    <button id="nextBtn">➡️ السؤال التالي</button>
+    <button id="restartBtn">🔁 إعادة</button>
+  </div>
+</div>
+</div>
+
+<script>
+const num1El = document.getElementById('num1');
+const num2El = document.getElementById('num2');
+const operatorEl = document.getElementById('operator');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const scoreEl = document.getElementById('score');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const timeLeftEl = document.getElementById('timeLeft');
+const levelButtons = document.querySelectorAll('.level-btn');
+const levelSelect = document.getElementById('levelSelect');
+const gameArea = document.getElementById('gameArea');
+
+let correctAnswer, score = 0, timer, timeLeft, questionActive = true, currentLevel = "easy";
+
+const levelSettings = {
+  easy:    { range: 10,  time: 10, operators: ['+'] },
+  medium:  { range: 20,  time: 8,  operators: ['+', '-'] },
+  hard:    { range: 50,  time: 5,  operators: ['+', '-'] }
+};
+
+levelButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentLevel = btn.dataset.level;
+    startGame();
+  });
+});
+
+function startGame() {
+  score = 0;
+  scoreEl.textContent = 'النقاط: 0';
+  levelSelect.style.display = 'none';
+  gameArea.style.display = 'block';
+  generateQuestion();
+}
+
+function generateQuestion() {
+  clearInterval(timer);
+  optionsEl.innerHTML = '';
+  feedbackEl.textContent = '';
+  questionActive = true;
+
+  const level = levelSettings[currentLevel];
+  const num1 = Math.floor(Math.random() * level.range) + 1;
+  const num2 = Math.floor(Math.random() * level.range) + 1;
+  const operator = level.operators[Math.floor(Math.random() * level.operators.length)];
+
+  correctAnswer = operator === '+' ? num1 + num2 : num1 - num2;
+
+  num1El.textContent = num1;
+  num2El.textContent = num2;
+  operatorEl.textContent = operator;
+
+  let answers = new Set();
+  answers.add(correctAnswer);
+  while (answers.size < 4) {
+    answers.add(correctAnswer + Math.floor(Math.random() * 10) - 5);
+  }
+
+  [...answers].sort(() => Math.random() - 0.5).forEach(ans => {
+    const btn = document.createElement('button');
+    btn.textContent = ans;
+    btn.className = 'option-btn';
+    btn.onclick = () => checkAnswer(ans);
+    optionsEl.appendChild(btn);
+  });
+
+  timeLeft = level.time;
+  timeLeftEl.textContent = timeLeft;
+  startTimer();
+}
+
+function startTimer() {
+  timer = setInterval(() => {
+    timeLeft--;
+    timeLeftEl.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      if (questionActive) {
+        questionActive = false;
+        feedbackEl.textContent = '⌛ انتهى الوقت!';
+        feedbackEl.style.color = 'red';
+      }
+    }
+  }, 1000);
+}
+
+function checkAnswer(selected) {
+  if (!questionActive) return;
+  clearInterval(timer);
+  questionActive = false;
+
+  if (selected === correctAnswer) {
+    feedbackEl.textContent = '✅ أحسنت! إجابة صحيحة';
+    feedbackEl.style.color = 'green';
+    score++;
+  } else {
+    feedbackEl.textContent = `❌ خطأ! الإجابة الصحيحة هي ${correctAnswer}`;
+    feedbackEl.style.color = 'red';
+  }
+  scoreEl.textContent = `النقاط: ${score}`;
+}
+
+nextBtn.addEventListener('click', generateQuestion);
+
+restartBtn.addEventListener('click', () => {
+  clearInterval(timer);
+  gameArea.style.display = 'none';
+  levelSelect.style.display = 'flex';
+});
+</script>
+</body>
+</html>
